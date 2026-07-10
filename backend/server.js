@@ -1,0 +1,532 @@
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = 5000;
+
+// Enable CORS and JSON body parsers
+app.use(cors());
+app.use(express.json());
+
+// Programmatically verify & create DB directories and static uploads folders
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR = path.join(__dirname, 'data');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const REVIEWS_FILE = path.join(DATA_DIR, 'reviews.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const CONSULTATIONS_FILE = path.join(DATA_DIR, 'consultations.json');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Serve uploads folder statically
+app.use('/uploads', express.express ? express.express.static(UPLOADS_DIR) : express.static(UPLOADS_DIR));
+
+// Initial seeded products
+const INITIAL_PRODUCTS = [
+  {
+    id: 'k1',
+    name: 'Premium Teak Modular Kitchen',
+    category: 'Modular Kitchen',
+    price: 345000,
+    image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
+    description: 'A beautiful L-shaped modular kitchen made from high-grade water-resistant plywood and natural teak veneer finishing. Includes soft-close drawers and profile handles.',
+    features: ['Teak veneer finish', 'Soft-close tandem drawers', 'Waterproof plywood', '10-Year warranty']
+  },
+  {
+    id: 'k2',
+    name: 'Modern Charcoal & Wood Kitchen',
+    category: 'Modular Kitchen',
+    price: 420000,
+    image: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
+    description: 'Sleek dual-tone modular kitchen with matte charcoal cabinetry and warm walnut accents. Features pull-out pantries and intelligent corner solutions.',
+    features: ['German hardware (Hettich)', 'Quartz countertop fitment', 'Acrylic shutters', 'LED profile lighting']
+  },
+  {
+    id: 'b1',
+    name: 'Spacious Sliding Wardrobe',
+    category: 'bedroom cupboard',
+    price: 85000,
+    image: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=600&q=80',
+    description: 'Modern 3-door sliding wardrobe with a full-length dressing mirror, laminate finishes, and internal drawers with secure locks.',
+    features: ['Smooth sliding tracks', 'Scratch-resistant laminate', 'Integrated dressing mirror', 'LED hanger rods']
+  },
+  {
+    id: 'b2',
+    name: 'Classic Teak Bedroom Cupboard',
+    category: 'bedroom cupboard',
+    price: 115000,
+    image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80',
+    description: 'Timeless bedroom cupboard handcrafted from seasoned teak wood. Features traditional design carvings with brass hardware handles.',
+    features: ['100% Solid Teak Wood', 'Traditional brass handles', 'Rich melamine polish', 'Deep storage drawers']
+  },
+  {
+    id: 't1',
+    name: 'Sleek Floating TV Entertainment Unit',
+    category: 'TV units & Cupboards',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=600&q=80',
+    description: 'Modern wall-mounted entertainment center with concealed cable management, open display shelves, and matte laminate push-to-open cabinets.',
+    features: ['Concealed wiring outlets', 'Push-to-open cabinets', 'Sturdy wall mounts', 'Dual-tone wood & white laminate']
+  },
+  {
+    id: 't2',
+    name: 'Grand Hall TV & Showcase Console',
+    category: 'TV units & Cupboards',
+    price: 72000,
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80',
+    description: 'A floor-standing wooden TV unit flanking display cabinets on both sides. Perfect for large living rooms and showcasing decor.',
+    features: ['Tempered glass side panels', 'Solid wooden base', 'Accent wood paneling background', 'Spacious storage drawers']
+  },
+  {
+    id: 's1',
+    name: 'Glass-Front Antique Showcase',
+    category: 'showcase',
+    price: 55000,
+    image: 'https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?auto=format&fit=crop&w=600&q=80',
+    description: 'An elegant glass-front cabinet designed to display your precious chinaware, trophies, and books. Hand-polished to a semi-gloss finish.',
+    features: ['Tempered glass doors', 'Adjustable wood shelves', 'Warm spotlight integration', 'Rosewood finish laminate']
+  },
+  {
+    id: 'd1',
+    name: 'Solid Teak Main Door',
+    category: 'Wooden Door',
+    price: 45000,
+    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80',
+    description: 'Heavy duty, premium quality front entrance door crafted from a single slab of seasoned Burma teak wood. Features a classic paneled design.',
+    features: ['100% Burma Teak Wood', 'Termite resistant', 'High-weather resistance varnish', 'Thickness: 38mm']
+  },
+  {
+    id: 'dd1',
+    name: 'Geometric Laser-Cut Design Door',
+    category: 'pooja cupboard',
+    price: 32000,
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
+    description: 'Modern designer entrance door with custom laser-engraved geometric shapes and embedded brass inlay work.',
+    features: ['Waterproof flush door core', 'Teak veneer veneer cladding', 'Elegant brass strip inlays', 'Modern CNC router engraving']
+  },
+  {
+    id: 'f1',
+    name: 'Royal Teak 6-Seater Dining Set',
+    category: 'furniture',
+    price: 125000,
+    image: 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?auto=format&fit=crop&w=600&q=80',
+    description: 'A luxurious solid wood dining table with six upholstered matching chairs. Carefully finished to preserve natural wood grains.',
+    features: ['Solid Rosewood/Teak Table', 'Cushioned dining chairs', 'Eco-friendly polyurethane coat', 'Sturdy joinery']
+  },
+  {
+    id: 'f2',
+    name: 'Handcrafted Wooden Armchair',
+    category: 'furniture',
+    price: 18500,
+    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80',
+    description: 'Ergonomically designed wooden lounge chair with curved armrests and woven cane backing. Adds a vintage touch to your living room.',
+    features: ['Natural cane weaving', 'Ergonomic lumbar support', 'Light teak polish', 'Solid ash wood frame']
+  },
+  {
+    id: 'wc1',
+    name: 'Ganesha Wooden Wall Carving Panel',
+    category: 'Model Wood Carving',
+    price: 28000,
+    image: 'https://images.unsplash.com/photo-1606744824163-985d376605aa?auto=format&fit=crop&w=600&q=80',
+    description: 'Exquisite, detailed wall panel carving of Lord Ganesha, handcrafted by master artisans from single-piece Vengai wood.',
+    features: ['100% Handcrafted', 'Single piece hardwood', 'Detailed floral frame border', 'Perfect for pooja room/living entry']
+  }
+];
+
+const INITIAL_REVIEWS = [
+  {
+    id: 1,
+    name: 'Ramesh Kumar',
+    rating: 5,
+    comment: 'Selva Harish did an amazing job with our modular kitchen! The teak veneer looks absolutely stunning, and the soft-close drawers work like a charm. Highly recommend their craftsmanship!',
+    date: '2026-06-15'
+  },
+  {
+    id: 2,
+    name: 'Priya Sundar',
+    rating: 5,
+    comment: 'Ordered a customized sliding bedroom cupboard and a design door. The finishing is flawless, and they delivered exactly on time. Outstanding wood carving details.',
+    date: '2026-06-28'
+  },
+  {
+    id: 3,
+    name: 'Vikram Adithya',
+    rating: 4,
+    comment: 'Excellent TV unit console. The hidden wiring panel keeps the living room looking clean. Very professional team and durable construction materials.',
+    date: '2026-07-02'
+  }
+];
+
+if (!fs.existsSync(PRODUCTS_FILE) || fs.readFileSync(PRODUCTS_FILE, 'utf-8').trim() === '[]' || fs.readFileSync(PRODUCTS_FILE, 'utf-8').trim() === '') {
+  fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(INITIAL_PRODUCTS, null, 2), 'utf-8');
+}
+if (!fs.existsSync(REVIEWS_FILE)) {
+  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(INITIAL_REVIEWS, null, 2), 'utf-8');
+}
+if (!fs.existsSync(USERS_FILE)) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2), 'utf-8');
+}
+if (!fs.existsSync(CONSULTATIONS_FILE)) {
+  fs.writeFileSync(CONSULTATIONS_FILE, JSON.stringify([], null, 2), 'utf-8');
+}
+
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'furniture-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// Helper database reader/writers
+const getProducts = () => {
+  const data = fs.readFileSync(PRODUCTS_FILE, 'utf-8');
+  return JSON.parse(data);
+};
+
+const saveProducts = (productsList) => {
+  fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(productsList, null, 2), 'utf-8');
+};
+
+const getReviews = () => {
+  const data = fs.readFileSync(REVIEWS_FILE, 'utf-8');
+  return JSON.parse(data);
+};
+
+const saveReviews = (reviewsList) => {
+  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviewsList, null, 2), 'utf-8');
+};
+
+const getUsers = () => {
+  const data = fs.readFileSync(USERS_FILE, 'utf-8');
+  return JSON.parse(data);
+};
+
+const saveUsers = (usersList) => {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(usersList, null, 2), 'utf-8');
+};
+
+const getConsultations = () => {
+  const data = fs.readFileSync(CONSULTATIONS_FILE, 'utf-8');
+  return JSON.parse(data);
+};
+
+const saveConsultations = (consultationsList) => {
+  fs.writeFileSync(CONSULTATIONS_FILE, JSON.stringify(consultationsList, null, 2), 'utf-8');
+};
+
+// --- API ROUTES ---
+
+// 1. GET Products
+app.get('/api/products', (req, res) => {
+  try {
+    const products = getProducts();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not fetch products database' });
+  }
+});
+
+// 2. POST Product (Multipart File Upload)
+app.post('/api/products', upload.single('image'), (req, res) => {
+  try {
+    const { name, price, category, description, materials } = req.body;
+    
+    if (!name || !price || !category) {
+      return res.status(400).json({ error: 'Missing name, price or category.' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Missing product photograph.' });
+    }
+
+    const products = getProducts();
+    const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+
+    const materialsArray = materials
+      ? materials.split(',').map((m) => m.trim()).filter(Boolean)
+      : [];
+
+    const newProduct = {
+      id: 'custom_' + Date.now(),
+      name,
+      price: parseInt(price, 10),
+      category,
+      image: imageUrl,
+      description: description || `Bespoke handcrafted item by SELVA HARISH workshops under ${category}.`,
+      materials: materialsArray,
+      features: ['100% Solid Timber', 'Premium Finish Polish', 'Handmade craftsmanship', '5-Year structural warranty']
+    };
+
+    products.unshift(newProduct); // add to top of lists
+    saveProducts(products);
+
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: 'Internal server error while saving product' });
+  }
+});
+
+// 3. GET Reviews
+app.get('/api/reviews', (req, res) => {
+  try {
+    const reviews = getReviews();
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not fetch reviews database' });
+  }
+});
+
+// 4. POST Review
+app.post('/api/reviews', (req, res) => {
+  try {
+    const { name, rating, comment } = req.body;
+    if (!name || !rating || !comment) {
+      return res.status(400).json({ error: 'Missing review name, rating or comment details.' });
+    }
+
+    const reviews = getReviews();
+    const newReview = {
+      id: Date.now(),
+      name,
+      rating: parseInt(rating, 10),
+      comment,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    reviews.unshift(newReview);
+    saveReviews(reviews);
+
+    res.status(201).json(newReview);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not save review feedback' });
+  }
+});
+
+// 5. DELETE Product card
+app.delete('/api/products/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    let products = getProducts();
+    const productToDelete = products.find((p) => p.id === id);
+
+    if (!productToDelete) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Delete custom uploaded file from disk if it was saved locally
+    if (productToDelete.image && productToDelete.image.startsWith(`http://localhost:${PORT}/uploads/`)) {
+      const filename = productToDelete.image.split('/uploads/')[1];
+      if (filename) {
+        const filePath = path.join(UPLOADS_DIR, filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+
+    products = products.filter((p) => p.id !== id);
+    saveProducts(products);
+
+    res.json({ success: true, message: 'Product card deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Failed to delete product card' });
+  }
+});
+
+// 6. POST Register
+app.post('/api/register', (req, res) => {
+  try {
+    const { username, password, email } = req.body;
+    if (!username || !password || !email) {
+      return res.status(400).json({ error: 'Missing registration details.' });
+    }
+
+    const cleanUser = username.trim();
+    if (cleanUser.toLowerCase() === 'admin') {
+      return res.status(400).json({ error: 'Cannot register with reserved username "Admin".' });
+    }
+
+    const users = getUsers();
+    const exists = users.some(u => u.username.toLowerCase() === cleanUser.toLowerCase());
+
+    if (exists) {
+      return res.status(400).json({ error: 'Username is already taken!' });
+    }
+
+    const newUser = {
+      id: Date.now(),
+      username: cleanUser,
+      password,
+      email: email.trim()
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+
+    res.status(201).json({ success: true, user: { username: cleanUser, role: 'user', email: email.trim() } });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Failed to complete user registration' });
+  }
+});
+
+// 7. POST Login
+app.post('/api/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing email or password' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    
+    // Check static Admin login (works if entered in admin tab or customer email input)
+    if (cleanEmail === 'selva' && password === 'selva@123') {
+      return res.json({ success: true, user: { username: 'selva', role: 'admin' } });
+    }
+
+    // Check custom registered users matching by email
+    const users = getUsers();
+    const foundUser = users.find(
+      (u) => u.email.toLowerCase() === cleanEmail && u.password === password
+    );
+
+    if (foundUser) {
+      return res.json({ success: true, user: { username: foundUser.username, role: 'user', email: foundUser.email } });
+    }
+
+    res.status(401).json({ error: 'Invalid email or password' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to complete login request' });
+  }
+});
+
+// Helper: send background message via UltraMsg gateway
+const sendWhatsappBackground = async (toPhone, messageText) => {
+  // =========================================================================
+  // AUTOMATED BACKGROUND WHATSAPP NOTIFICATION CONFIGURATION
+  // To send messages automatically in the background, set up an account with UltraMsg
+  // (https://ultramsg.com) and replace the variables below.
+  // =========================================================================
+  const INSTANCE_ID = ''; // Enter your UltraMsg Instance ID here (e.g. 'instance12345')
+  const TOKEN = '';       // Enter your UltraMsg Token here
+
+  if (!INSTANCE_ID || !TOKEN) {
+    console.log('\n--- SIMULATED BACKGROUND WHATSAPP MESSAGE SENT ---');
+    console.log(`To: ${toPhone}`);
+    console.log(`Message:\n${messageText}`);
+    console.log('--------------------------------------------------\n');
+    return { success: true, status: 'simulated' };
+  }
+
+  try {
+    const url = `https://api.ultramsg.com/${INSTANCE_ID}/messages/chat`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        token: TOKEN,
+        to: toPhone,
+        body: messageText,
+        priority: '10'
+      })
+    });
+    const data = await response.json();
+    console.log('UltraMsg API Response:', data);
+    return { success: true, response: data };
+  } catch (err) {
+    console.error('Failed to send background WhatsApp via UltraMsg:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+// 8. POST consultations (Book Consultation)
+app.post('/api/consultations', async (req, res) => {
+  try {
+    const { username, phone, address, cart, total } = req.body;
+    if (!username || !phone || !address || !cart || !total) {
+      return res.status(400).json({ error: 'Missing booking details' });
+    }
+
+    const consultations = getConsultations();
+    const newBooking = {
+      id: 'book_' + Date.now(),
+      username,
+      phone,
+      address,
+      cart,
+      total,
+      date: new Date().toISOString()
+    };
+
+    consultations.unshift(newBooking);
+    saveConsultations(consultations);
+
+    // Format a detailed message summarizing the booking
+    const itemsText = cart
+      .map((item, idx) => `• ${item.name} x ${item.quantity} [₹${item.price * item.quantity}]`)
+      .join('\n');
+    
+    const formattedTotal = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(total);
+
+    const message = `*SELVA HARISH - NEW CONSULTATION BOOKING*\n\n` +
+      `*Client Name*: ${username}\n` +
+      `*Contact Phone*: ${phone}\n` +
+      `*Delivery Address*: ${address}\n\n` +
+      `*Requested Items*:\n${itemsText}\n\n` +
+      `*Estimated Cost*: ${formattedTotal}\n\n` +
+      `Booking logged to database. Please coordinate measurements.`;
+
+    // Send WhatsApp notification in the background to the Admin's phone number
+    // Format: Country Code + Phone Number (e.g. '919876543210' for India)
+    // =========================================================================
+    // ENTER YOUR WHATSAPP MOBILE NUMBER HERE
+    // =========================================================================
+    const ADMIN_WHATSAPP_NUMBER = '916379183549'; 
+
+    await sendWhatsappBackground(ADMIN_WHATSAPP_NUMBER, message);
+
+    res.status(201).json({ 
+      success: true, 
+      bookingId: newBooking.id,
+      whatsappUrl: `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
+    });
+  } catch (error) {
+    console.error('Booking error:', error);
+    res.status(500).json({ error: 'Failed to record consultation booking' });
+  }
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Backend Server running at http://localhost:${PORT}`);
+});

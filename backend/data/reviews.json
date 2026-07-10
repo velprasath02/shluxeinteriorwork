@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Ramesh Kumar",
+    "rating": 5,
+    "comment": "Selva Harish did an amazing job with our modular kitchen! The teak veneer looks absolutely stunning, and the soft-close drawers work like a charm. Highly recommend their craftsmanship!",
+    "date": "2026-06-15"
+  },
+  {
+    "id": 2,
+    "name": "Priya Sundar",
+    "rating": 5,
+    "comment": "Ordered a customized sliding bedroom cupboard and a design door. The finishing is flawless, and they delivered exactly on time. Outstanding wood carving details.",
+    "date": "2026-06-28"
+  },
+  {
+    "id": 3,
+    "name": "Vikram Adithya",
+    "rating": 4,
+    "comment": "Excellent TV unit console. The hidden wiring panel keeps the living room looking clean. Very professional team and durable construction materials.",
+    "date": "2026-07-02"
+  }
+]

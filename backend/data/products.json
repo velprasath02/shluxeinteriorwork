@@ -1,0 +1,187 @@
+[
+  {
+    "id": "custom_1783665216778",
+    "name": "mdern material",
+    "price": 10000,
+    "category": "Home",
+    "image": "http://localhost:5000/uploads/furniture-1783665216775-821418744.jpg",
+    "description": "A custom-designed, premium finish product in our Home category. Hand-machined and installed by SELVA HARISH workshops.",
+    "materials": [
+      "fergtrtg"
+    ],
+    "features": [
+      "100% Solid Timber",
+      "Premium Finish Polish",
+      "Handmade craftsmanship",
+      "5-Year structural warranty"
+    ]
+  },
+  {
+    "id": "k1",
+    "name": "Premium Teak Modular Kitchen",
+    "category": "Modular Kitchen",
+    "price": 345000,
+    "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80",
+    "description": "A beautiful L-shaped modular kitchen made from high-grade water-resistant plywood and natural teak veneer finishing. Includes soft-close drawers and profile handles.",
+    "features": [
+      "Teak veneer finish",
+      "Soft-close tandem drawers",
+      "Waterproof plywood",
+      "10-Year warranty"
+    ]
+  },
+  {
+    "id": "k2",
+    "name": "Modern Charcoal & Wood Kitchen",
+    "category": "Modular Kitchen",
+    "price": 420000,
+    "image": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80",
+    "description": "Sleek dual-tone modular kitchen with matte charcoal cabinetry and warm walnut accents. Features pull-out pantries and intelligent corner solutions.",
+    "features": [
+      "German hardware (Hettich)",
+      "Quartz countertop fitment",
+      "Acrylic shutters",
+      "LED profile lighting"
+    ]
+  },
+  {
+    "id": "b1",
+    "name": "Spacious Sliding Wardrobe",
+    "category": "bedroom cupboard",
+    "price": 85000,
+    "image": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=600&q=80",
+    "description": "Modern 3-door sliding wardrobe with a full-length dressing mirror, laminate finishes, and internal drawers with secure locks.",
+    "features": [
+      "Smooth sliding tracks",
+      "Scratch-resistant laminate",
+      "Integrated dressing mirror",
+      "LED hanger rods"
+    ]
+  },
+  {
+    "id": "b2",
+    "name": "Classic Teak Bedroom Cupboard",
+    "category": "bedroom cupboard",
+    "price": 115000,
+    "image": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80",
+    "description": "Timeless bedroom cupboard handcrafted from seasoned teak wood. Features traditional design carvings with brass hardware handles.",
+    "features": [
+      "100% Solid Teak Wood",
+      "Traditional brass handles",
+      "Rich melamine polish",
+      "Deep storage drawers"
+    ]
+  },
+  {
+    "id": "t1",
+    "name": "Sleek Floating TV Entertainment Unit",
+    "category": "TV units & Cupboards",
+    "price": 48000,
+    "image": "https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&w=600&q=80",
+    "description": "Modern wall-mounted entertainment center with concealed cable management, open display shelves, and matte laminate push-to-open cabinets.",
+    "features": [
+      "Concealed wiring outlets",
+      "Push-to-open cabinets",
+      "Sturdy wall mounts",
+      "Dual-tone wood & white laminate"
+    ]
+  },
+  {
+    "id": "t2",
+    "name": "Grand Hall TV & Showcase Console",
+    "category": "TV units & Cupboards",
+    "price": 72000,
+    "image": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80",
+    "description": "A floor-standing wooden TV unit flanking display cabinets on both sides. Perfect for large living rooms and showcasing decor.",
+    "features": [
+      "Tempered glass side panels",
+      "Solid wooden base",
+      "Accent wood paneling background",
+      "Spacious storage drawers"
+    ]
+  },
+  {
+    "id": "s1",
+    "name": "Glass-Front Antique Showcase",
+    "category": "showcase",
+    "price": 55000,
+    "image": "https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?auto=format&fit=crop&w=600&q=80",
+    "description": "An elegant glass-front cabinet designed to display your precious chinaware, trophies, and books. Hand-polished to a semi-gloss finish.",
+    "features": [
+      "Tempered glass doors",
+      "Adjustable wood shelves",
+      "Warm spotlight integration",
+      "Rosewood finish laminate"
+    ]
+  },
+  {
+    "id": "d1",
+    "name": "Solid Teak Main Door",
+    "category": "Wooden Door",
+    "price": 45000,
+    "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80",
+    "description": "Heavy duty, premium quality front entrance door crafted from a single slab of seasoned Burma teak wood. Features a classic paneled design.",
+    "features": [
+      "100% Burma Teak Wood",
+      "Termite resistant",
+      "High-weather resistance varnish",
+      "Thickness: 38mm"
+    ]
+  },
+  {
+    "id": "dd1",
+    "name": "Geometric Laser-Cut Design Door",
+    "category": "pooja cupboard",
+    "price": 32000,
+    "image": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80",
+    "description": "Modern designer entrance door with custom laser-engraved geometric shapes and embedded brass inlay work.",
+    "features": [
+      "Waterproof flush door core",
+      "Teak veneer veneer cladding",
+      "Elegant brass strip inlays",
+      "Modern CNC router engraving"
+    ]
+  },
+  {
+    "id": "f1",
+    "name": "Royal Teak 6-Seater Dining Set",
+    "category": "furniture",
+    "price": 125000,
+    "image": "https://images.unsplash.com/photo-1577140917170-285929fb55b7?auto=format&fit=crop&w=600&q=80",
+    "description": "A luxurious solid wood dining table with six upholstered matching chairs. Carefully finished to preserve natural wood grains.",
+    "features": [
+      "Solid Rosewood/Teak Table",
+      "Cushioned dining chairs",
+      "Eco-friendly polyurethane coat",
+      "Sturdy joinery"
+    ]
+  },
+  {
+    "id": "f2",
+    "name": "Handcrafted Wooden Armchair",
+    "category": "furniture",
+    "price": 18500,
+    "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80",
+    "description": "Ergonomically designed wooden lounge chair with curved armrests and woven cane backing. Adds a vintage touch to your living room.",
+    "features": [
+      "Natural cane weaving",
+      "Ergonomic lumbar support",
+      "Light teak polish",
+      "Solid ash wood frame"
+    ]
+  },
+  {
+    "id": "wc1",
+    "name": "Ganesha Wooden Wall Carving Panel",
+    "category": "Model Wood Carving",
+    "price": 28000,
+    "image": "https://images.unsplash.com/photo-1606744824163-985d376605aa?auto=format&fit=crop&w=600&q=80",
+    "description": "Exquisite, detailed wall panel carving of Lord Ganesha, handcrafted by master artisans from single-piece Vengai wood.",
+    "features": [
+      "100% Handcrafted",
+      "Single piece hardwood",
+      "Detailed floral frame border",
+      "Perfect for pooja room/living entry"
+    ]
+  }
+]
