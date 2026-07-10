@@ -528,7 +528,7 @@ app.post('/api/consultations', async (req, res) => {
       `Booking logged to database. Please coordinate measurements.`;
 
     // Dynamic Admin WhatsApp phone number
-    const ADMIN_WHATSAPP_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || '916379183549'; 
+    const ADMIN_WHATSAPP_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || '919894390408'; 
 
     await sendWhatsappBackground(ADMIN_WHATSAPP_NUMBER, message);
 
