@@ -26,3 +26,12 @@ dist-ssr
 # Backend uploads
 backend/uploads/
 
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
+.env.production.local
+.env.development.local
+

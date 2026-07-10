@@ -4,15 +4,42 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+import { 
+  initDb, 
+  getProducts, 
+  addProduct, 
+  deleteProduct, 
+  getReviews, 
+  addReview, 
+  getUsers, 
+  addUser, 
+  getConsultations, 
+  addConsultation 
+} from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Enable CORS and JSON body parsers
-app.use(cors());
+const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || !process.env.FRONTEND_URL || allowedOrigins.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Programmatically verify & create DB directories and static uploads folders
@@ -199,49 +226,12 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Helper database reader/writers
-const getProducts = () => {
-  const data = fs.readFileSync(PRODUCTS_FILE, 'utf-8');
-  return JSON.parse(data);
-};
-
-const saveProducts = (productsList) => {
-  fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(productsList, null, 2), 'utf-8');
-};
-
-const getReviews = () => {
-  const data = fs.readFileSync(REVIEWS_FILE, 'utf-8');
-  return JSON.parse(data);
-};
-
-const saveReviews = (reviewsList) => {
-  fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviewsList, null, 2), 'utf-8');
-};
-
-const getUsers = () => {
-  const data = fs.readFileSync(USERS_FILE, 'utf-8');
-  return JSON.parse(data);
-};
-
-const saveUsers = (usersList) => {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(usersList, null, 2), 'utf-8');
-};
-
-const getConsultations = () => {
-  const data = fs.readFileSync(CONSULTATIONS_FILE, 'utf-8');
-  return JSON.parse(data);
-};
-
-const saveConsultations = (consultationsList) => {
-  fs.writeFileSync(CONSULTATIONS_FILE, JSON.stringify(consultationsList, null, 2), 'utf-8');
-};
-
 // --- API ROUTES ---
 
 // 1. GET Products
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
   try {
-    const products = getProducts();
+    const products = await getProducts();
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch products database' });
@@ -249,7 +239,7 @@ app.get('/api/products', (req, res) => {
 });
 
 // 2. POST Product (Multipart File Upload)
-app.post('/api/products', upload.single('image'), (req, res) => {
+app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
     const { name, price, category, description, materials } = req.body;
     
@@ -260,8 +250,9 @@ app.post('/api/products', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'Missing product photograph.' });
     }
 
-    const products = getProducts();
-    const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+    // Dynamically resolve image serving URL
+    const baseUrl = req.protocol + '://' + req.get('host');
+    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
     const materialsArray = materials
       ? materials.split(',').map((m) => m.trim()).filter(Boolean)
@@ -278,8 +269,7 @@ app.post('/api/products', upload.single('image'), (req, res) => {
       features: ['100% Solid Timber', 'Premium Finish Polish', 'Handmade craftsmanship', '5-Year structural warranty']
     };
 
-    products.unshift(newProduct); // add to top of lists
-    saveProducts(products);
+    await addProduct(newProduct);
 
     res.status(201).json(newProduct);
   } catch (error) {
@@ -289,9 +279,9 @@ app.post('/api/products', upload.single('image'), (req, res) => {
 });
 
 // 3. GET Reviews
-app.get('/api/reviews', (req, res) => {
+app.get('/api/reviews', async (req, res) => {
   try {
-    const reviews = getReviews();
+    const reviews = await getReviews();
     res.json(reviews);
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch reviews database' });
@@ -299,14 +289,13 @@ app.get('/api/reviews', (req, res) => {
 });
 
 // 4. POST Review
-app.post('/api/reviews', (req, res) => {
+app.post('/api/reviews', async (req, res) => {
   try {
     const { name, rating, comment } = req.body;
     if (!name || !rating || !comment) {
       return res.status(400).json({ error: 'Missing review name, rating or comment details.' });
     }
 
-    const reviews = getReviews();
     const newReview = {
       id: Date.now(),
       name,
@@ -315,8 +304,7 @@ app.post('/api/reviews', (req, res) => {
       date: new Date().toISOString().split('T')[0]
     };
 
-    reviews.unshift(newReview);
-    saveReviews(reviews);
+    await addReview(newReview);
 
     res.status(201).json(newReview);
   } catch (error) {
@@ -325,18 +313,18 @@ app.post('/api/reviews', (req, res) => {
 });
 
 // 5. DELETE Product card
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    let products = getProducts();
+    const products = await getProducts();
     const productToDelete = products.find((p) => p.id === id);
 
     if (!productToDelete) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Delete custom uploaded file from disk if it was saved locally
-    if (productToDelete.image && productToDelete.image.startsWith(`http://localhost:${PORT}/uploads/`)) {
+    // Delete custom uploaded file from disk if it was saved locally (checking if URL contains "/uploads/")
+    if (productToDelete.image && productToDelete.image.includes('/uploads/')) {
       const filename = productToDelete.image.split('/uploads/')[1];
       if (filename) {
         const filePath = path.join(UPLOADS_DIR, filename);
@@ -346,8 +334,10 @@ app.delete('/api/products/:id', (req, res) => {
       }
     }
 
-    products = products.filter((p) => p.id !== id);
-    saveProducts(products);
+    const success = await deleteProduct(id);
+    if (!success) {
+      return res.status(404).json({ error: 'Product not found or already deleted' });
+    }
 
     res.json({ success: true, message: 'Product card deleted successfully' });
   } catch (error) {
@@ -357,7 +347,7 @@ app.delete('/api/products/:id', (req, res) => {
 });
 
 // 6. POST Register
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
   try {
     const { username, password, email } = req.body;
     if (!username || !password || !email) {
@@ -369,7 +359,7 @@ app.post('/api/register', (req, res) => {
       return res.status(400).json({ error: 'Cannot register with reserved username "Admin".' });
     }
 
-    const users = getUsers();
+    const users = await getUsers();
     const exists = users.some(u => u.username.toLowerCase() === cleanUser.toLowerCase());
 
     if (exists) {
@@ -383,8 +373,7 @@ app.post('/api/register', (req, res) => {
       email: email.trim()
     };
 
-    users.push(newUser);
-    saveUsers(users);
+    await addUser(newUser);
 
     res.status(201).json({ success: true, user: { username: cleanUser, role: 'user', email: email.trim() } });
   } catch (error) {
@@ -394,7 +383,7 @@ app.post('/api/register', (req, res) => {
 });
 
 // 7. POST Login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -409,7 +398,7 @@ app.post('/api/login', (req, res) => {
     }
 
     // Check custom registered users matching by email
-    const users = getUsers();
+    const users = await getUsers();
     const foundUser = users.find(
       (u) => u.email.toLowerCase() === cleanEmail && u.password === password
     );
@@ -428,11 +417,9 @@ app.post('/api/login', (req, res) => {
 const sendWhatsappBackground = async (toPhone, messageText) => {
   // =========================================================================
   // AUTOMATED BACKGROUND WHATSAPP NOTIFICATION CONFIGURATION
-  // To send messages automatically in the background, set up an account with UltraMsg
-  // (https://ultramsg.com) and replace the variables below.
   // =========================================================================
-  const INSTANCE_ID = ''; // Enter your UltraMsg Instance ID here (e.g. 'instance12345')
-  const TOKEN = '';       // Enter your UltraMsg Token here
+  const INSTANCE_ID = process.env.ULTRAMSG_INSTANCE_ID || ''; // Enter your UltraMsg Instance ID here
+  const TOKEN = process.env.ULTRAMSG_TOKEN || '';       // Enter your UltraMsg Token here
 
   if (!INSTANCE_ID || !TOKEN) {
     console.log('\n--- SIMULATED BACKGROUND WHATSAPP MESSAGE SENT ---');
@@ -473,7 +460,6 @@ app.post('/api/consultations', async (req, res) => {
       return res.status(400).json({ error: 'Missing booking details' });
     }
 
-    const consultations = getConsultations();
     const newBooking = {
       id: 'book_' + Date.now(),
       username,
@@ -484,8 +470,7 @@ app.post('/api/consultations', async (req, res) => {
       date: new Date().toISOString()
     };
 
-    consultations.unshift(newBooking);
-    saveConsultations(consultations);
+    await addConsultation(newBooking);
 
     // Format a detailed message summarizing the booking
     const itemsText = cart
@@ -506,12 +491,8 @@ app.post('/api/consultations', async (req, res) => {
       `*Estimated Cost*: ${formattedTotal}\n\n` +
       `Booking logged to database. Please coordinate measurements.`;
 
-    // Send WhatsApp notification in the background to the Admin's phone number
-    // Format: Country Code + Phone Number (e.g. '919876543210' for India)
-    // =========================================================================
-    // ENTER YOUR WHATSAPP MOBILE NUMBER HERE
-    // =========================================================================
-    const ADMIN_WHATSAPP_NUMBER = '916379183549'; 
+    // Dynamic Admin WhatsApp phone number
+    const ADMIN_WHATSAPP_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || '916379183549'; 
 
     await sendWhatsappBackground(ADMIN_WHATSAPP_NUMBER, message);
 
@@ -527,6 +508,13 @@ app.post('/api/consultations', async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`Backend Server running at http://localhost:${PORT}`);
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Backend Server running at http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Failed to initialize database on startup:', err);
+  app.listen(PORT, () => {
+    console.log(`Backend Server running at http://localhost:${PORT} (Database failed to connect)`);
+  });
 });
