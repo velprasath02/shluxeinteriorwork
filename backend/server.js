@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 // Load environment variables
 dotenv.config();
@@ -209,20 +211,49 @@ if (!fs.existsSync(CONSULTATIONS_FILE)) {
   fs.writeFileSync(CONSULTATIONS_FILE, JSON.stringify([], null, 2), 'utf-8');
 }
 
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'furniture-' + uniqueSuffix + ext);
-  }
-});
+// Cloudinary Configuration (Optional)
+let uploadStorage = null;
+
+const isCloudinaryConfigured = 
+  process.env.CLOUDINARY_CLOUD_NAME && 
+  process.env.CLOUDINARY_API_KEY && 
+  process.env.CLOUDINARY_API_SECRET;
+
+if (isCloudinaryConfigured) {
+  console.log('Cloudinary Configuration: API credentials detected. Initializing Cloudinary storage...');
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+
+  uploadStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'selvaharish-uploads',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+      public_id: (req, file) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        return 'furniture-' + uniqueSuffix;
+      }
+    }
+  });
+} else {
+  console.log('Cloudinary Configuration: No credentials found. Falling back to local disk storage.');
+  uploadStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, UPLOADS_DIR);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname);
+      cb(null, 'furniture-' + uniqueSuffix + ext);
+    }
+  });
+}
 
 const upload = multer({ 
-  storage: storage,
+  storage: uploadStorage,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
@@ -250,9 +281,14 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'Missing product photograph.' });
     }
 
-    // Dynamically resolve image serving URL
-    const baseUrl = req.protocol + '://' + req.get('host');
-    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    // Dynamically resolve image serving URL (Cloudinary path vs Local filename)
+    let imageUrl = '';
+    if (req.file.path && req.file.path.startsWith('http')) {
+      imageUrl = req.file.path;
+    } else {
+      const baseUrl = req.protocol + '://' + req.get('host');
+      imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    }
 
     const materialsArray = materials
       ? materials.split(',').map((m) => m.trim()).filter(Boolean)
